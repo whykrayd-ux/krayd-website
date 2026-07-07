@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta name="theme-color" content="#000000"/>
+  <title>KRAYD — Music Producer</title>
+  <meta name="description" content="Music producer creating modern beats, loops and sound for artists worldwide."/>
+  <meta name="author" content="KRAYD"/>
+  <meta property="og:title" content="KRAYD — Music Producer"/>
+  <meta property="og:description" content="Music producer creating modern beats, loops and sound for artists worldwide."/>
+  <meta property="og:type" content="website"/>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23000'/><text x='16' y='22' text-anchor='middle' font-family='Arial Black,sans-serif' font-size='18' font-weight='900' fill='%2300FF66'>K</text></svg>"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+
+  <style>
+    /* ============================================================
+       DESIGN TOKENS
+       ============================================================ */
+    :root {
+      --black:        #000000;
+      --white:        #ffffff;
+      --green:        #00FF66;
+      --green-10:     rgba(0,255,102,0.10);
+      --green-20:     rgba(0,255,102,0.20);
+      --green-40:     rgba(0,255,102,0.40);
+      --green-glow:   rgba(0,255,102,0.18);
+      --gray-900:     #0d0d0d;
+      --gray-800:     #141414;
+      --gray-700:     #1e1e1e;
+      --gray-500:     #3a3a3a;
+      --gray-300:     rgba(255,255,255,0.28);
+      --gray-100:     rgba(255,255,255,0.08);
+      --border-rest:  rgba(255,255,255,0.07);
+      --border-hover: rgba(0,255,102,0.55);
+      --font-display: 'Space Grotesk', sans-serif;
+      --font-body:    'Inter', sans-serif;
+      --ease-premium: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      --ease-spring:  cubic-bezier(0.34, 1.56, 0.64, 1);
+      --dur:          0.42s;
+    }
+
+    /* ============================================================
+       RESET
+       ============================================================ */
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior:smooth; -webkit-text-size-adjust:100%; }
+    body {
+      background: var(--black);
+      color: var(--white);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      min-height: 100dvh;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    a { color: inherit; text-decoration: none; }
+
+    /* ============================================================
+       BACKGROUND
+       ============================================================ */
+    .bg-grain {
+      position:fixed; inset:0; z-index:0; pointer-events:none;
+      opacity:0.028;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size:300px 300px;
+    }
+    .bg-orb {
+      position:fixed; border-radius:50%; pointer-events:none;
+      z-index:0; filter:blur(90px); opacity:0;
+      animation:orbAppear 3s var(--ease-premium) forwards;
+    }
+    .bg-orb-1 {
+      width:min(540px,90vw); height:min(540px,90vw);
+      background:radial-gradient(circle,rgba(0,255,102,0.18) 0%,transparent 70%);
+      top:-180px; left:-140px;
+      animation-name:orbAppear,orbFloat1;
+      animation-duration:3s,20s;
+      animation-delay:0s,3s;
+      animation-timing-function:var(--ease-premium),ease-in-out;
+      animation-fill-mode:forwards,none;
+      animation-iteration-count:1,infinite;
+    }
+    .bg-orb-2 {
+      width:min(420px,80vw); height:min(420px,80vw);
+      background:radial-gradient(circle,rgba(0,180,60,0.12) 0%,transparent 70%);
+      bottom:-120px; right:-100px;
+      animation-name:orbAppear,orbFloat2;
+      animation-duration:3s,25s;
+      animation-delay:0.5s,3.5s;
+      animation-timing-function:var(--ease-premium),ease-in-out;
+      animation-fill-mode:forwards,none;
+      animation-iteration-count:1,infinite;
+    }
+    @keyframes orbAppear { to { opacity:1; } }
+    @keyframes orbFloat1 {
+      0%,100% { transform:translate(0,0) scale(1); }
+      25%     { transform:translate(50px,30px) scale(1.06); }
+      50%     { transform:translate(20px,60px) scale(0.96); }
+      75%     { transform:translate(-30px,20px) scale(1.04); }
+    }
+    @keyframes orbFloat2 {
+      0%,100% { transform:translate(0,0) scale(1); }
+      33%     { transform:translate(-45px,-35px) scale(1.08); }
+      66%     { transform:translate(30px,-15px) scale(0.94); }
+    }
+    #bgCanvas { position:fixed; inset:0; z-index:1; pointer-events:none; }
+
+    /* ============================================================
+       PAGE
+       ============================================================ */
+    .page {
+      position:relative; z-index:2;
+      min-height:100vh; min-height:100dvh;
+      display:flex; flex-direction:column; align-items:center;
+      padding:clamp(56px,10vh,100px) 20px clamp(48px,8vh,80px);
+      opacity:0;
+      animation:pageIn 1.1s var(--ease-premium) forwards;
+      animation-delay:0.15s;
+    }
+    @keyframes pageIn {
+      from { opacity:0; transform:translateY(18px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    /* ============================================================
+       HERO
+       ============================================================ */
+    .hero {
+      text-align:center; width:100%; max-width:480px;
+      margin-bottom:clamp(48px,8vh,72px);
+    }
+    .hero-pill {
+      display:inline-flex; align-items:center; gap:7px;
+      background:rgba(0,255,102,0.06); border:1px solid rgba(0,255,102,0.18);
+      border-radius:100px; padding:5px 14px 5px 9px;
+      margin-bottom:clamp(24px,4vh,36px);
+      opacity:0; animation:fadeSlideUp 0.8s var(--ease-premium) forwards;
+      animation-delay:0.5s;
+    }
+    .hero-pill-dot {
+      width:6px; height:6px; border-radius:50%;
+      background:var(--green);
+      box-shadow:0 0 8px var(--green),0 0 16px rgba(0,255,102,0.4);
+      animation:dotPulse 2.2s ease-in-out infinite; flex-shrink:0;
+    }
+    @keyframes dotPulse {
+      0%,100% { transform:scale(1); opacity:1; }
+      50%     { transform:scale(0.75); opacity:0.5; }
+    }
+    .hero-pill-text {
+      font-family:var(--font-body); font-size:10px; font-weight:500;
+      letter-spacing:0.22em; text-transform:uppercase; color:var(--green);
+    }
+
+    /* Crystal canvas logo */
+    #kraydWrap {
+      width:100%; display:flex; justify-content:center;
+      margin-bottom:clamp(14px,2.5vh,22px);
+      opacity:0;
+      animation:titleIn 1.1s var(--ease-premium) forwards;
+      animation-delay:0.7s;
+    }
+    @keyframes titleIn {
+      from { opacity:0; transform:translateY(28px); filter:blur(12px); }
+      to   { opacity:1; transform:translateY(0);    filter:blur(0); }
+    }
+    #kraydCanvas {
+      display:block; max-width:100%;
+      user-select:none; -webkit-user-select:none; pointer-events:none;
+      will-change:transform;
+    }
+
+    .hero-desc {
+      font-family:var(--font-body); font-size:clamp(13px,3.5vw,14.5px);
+      font-weight:300; color:rgba(255,255,255,0.38);
+      line-height:1.75; max-width:260px; margin:0 auto;
+      letter-spacing:0.015em;
+      opacity:0; animation:fadeSlideUp 0.8s var(--ease-premium) forwards;
+      animation-delay:1.05s;
+    }
+    @keyframes fadeSlideUp {
+      from { opacity:0; transform:translateY(14px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    /* ============================================================
+       DIVIDER
+       ============================================================ */
+    .divider {
+      position:relative; width:100%; max-width:420px; height:1px;
+      margin-bottom:clamp(40px,7vh,60px);
+      opacity:0; animation:fadeSlideUp 0.8s var(--ease-premium) forwards;
+      animation-delay:1.15s;
+    }
+    .divider::before {
+      content:''; position:absolute; inset:0;
+      background:linear-gradient(90deg,transparent 0%,rgba(0,255,102,0.08) 20%,rgba(0,255,102,0.45) 50%,rgba(0,255,102,0.08) 80%,transparent 100%);
+    }
+    .divider::after {
+      content:''; position:absolute; top:50%; left:50%;
+      transform:translate(-50%,-50%);
+      width:60px; height:8px; background:var(--green);
+      border-radius:50%; filter:blur(6px); opacity:0.55;
+    }
+
+    /* ============================================================
+       BUTTONS
+       ============================================================ */
+    .links-nav { display:flex; flex-direction:column; gap:11px; width:100%; max-width:420px; }
+
+    .btn {
+      position:relative; display:flex; align-items:center;
+      justify-content:space-between; gap:12px;
+      padding:0 20px 0 16px; height:64px; border-radius:16px;
+      border:1px solid var(--border-rest);
+      background:rgba(255,255,255,0.025);
+      backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+      cursor:pointer; overflow:hidden; opacity:0;
+      text-decoration:none; color:inherit;
+      transition:
+        border-color  var(--dur) var(--ease-premium),
+        background    var(--dur) var(--ease-premium),
+        box-shadow    var(--dur) var(--ease-premium),
+        transform     var(--dur) var(--ease-spring);
+    }
+    .btn:nth-child(1) { animation:fadeSlideUp .7s var(--ease-premium) forwards; animation-delay:1.28s; }
+    .btn:nth-child(2) { animation:fadeSlideUp .7s var(--ease-premium) forwards; animation-delay:1.39s; }
+    .btn:nth-child(3) { animation:fadeSlideUp .7s var(--ease-premium) forwards; animation-delay:1.50s; }
+    .btn:nth-child(4) { animation:fadeSlideUp .7s var(--ease-premium) forwards; animation-delay:1.61s; }
+    .btn:nth-child(5) { animation:fadeSlideUp .7s var(--ease-premium) forwards; animation-delay:1.72s; }
+    .btn:nth-child(6) { animation:fadeSlideUp .7s var(--ease-premium) forwards; animation-delay:1.83s; }
+
+    .btn::before {
+      content:''; position:absolute; inset:0;
+      background:linear-gradient(110deg,transparent 30%,rgba(0,255,102,0.05) 50%,transparent 70%);
+      transform:translateX(-120%); transition:transform 0.7s var(--ease-premium);
+      pointer-events:none;
+    }
+    .btn::after {
+      content:''; position:absolute; inset:0;
+      background:linear-gradient(180deg,rgba(255,255,255,0.025) 0%,transparent 100%);
+      pointer-events:none; border-radius:inherit;
+    }
+    .btn:hover {
+      border-color:var(--border-hover);
+      background:rgba(0,255,102,0.03);
+      transform:translateY(-3px) scale(1.008);
+      box-shadow:0 0 0 1px rgba(0,255,102,0.08),0 8px 32px rgba(0,255,102,0.08),0 2px 8px rgba(0,0,0,0.5),inset 0 0 24px rgba(0,255,102,0.03);
+    }
+    .btn:hover::before { transform:translateX(120%); }
+    .btn:active { transform:translateY(-1px) scale(1.003); }
+    .btn:focus-visible { outline:2px solid var(--green); outline-offset:3px; }
+
+    .btn-left { display:flex; align-items:center; gap:13px; min-width:0; flex:1; }
+    .btn-icon-wrap {
+      width:36px; height:36px; border-radius:10px;
+      border:1px solid rgba(255,255,255,0.07);
+      background:rgba(255,255,255,0.04);
+      display:flex; align-items:center; justify-content:center; flex-shrink:0;
+      transition:background var(--dur) var(--ease-premium),border-color var(--dur) var(--ease-premium),box-shadow var(--dur) var(--ease-premium);
+    }
+    .btn:hover .btn-icon-wrap {
+      background:var(--green-10); border-color:rgba(0,255,102,0.28);
+      box-shadow:0 0 12px rgba(0,255,102,0.12);
+    }
+    .btn-icon-wrap svg { width:17px; height:17px; transition:fill var(--dur) var(--ease-premium),stroke var(--dur) var(--ease-premium); }
+    .btn-text { display:flex; flex-direction:column; gap:2px; min-width:0; }
+    .btn-title {
+      font-family:var(--font-display); font-size:13px; font-weight:600;
+      letter-spacing:0.09em; text-transform:uppercase;
+      color:rgba(255,255,255,0.82); white-space:nowrap;
+      overflow:hidden; text-overflow:ellipsis;
+      transition:color var(--dur) var(--ease-premium);
+    }
+    .btn-meta {
+      font-family:var(--font-body); font-size:10.5px; font-weight:400;
+      letter-spacing:0.04em; color:rgba(255,255,255,0.24);
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+      transition:color var(--dur) var(--ease-premium);
+    }
+    .btn:hover .btn-title { color:var(--green); }
+    .btn:hover .btn-meta  { color:rgba(0,255,102,0.45); }
+
+    .btn-arrow {
+      width:30px; height:30px; border-radius:50%;
+      border:1px solid rgba(255,255,255,0.09);
+      display:flex; align-items:center; justify-content:center; flex-shrink:0;
+      transition:border-color var(--dur) var(--ease-premium),background var(--dur) var(--ease-premium),transform var(--dur) var(--ease-spring);
+    }
+    .btn-arrow svg {
+      width:12px; height:12px; fill:none;
+      stroke:rgba(255,255,255,0.3); stroke-width:1.6;
+      stroke-linecap:round; stroke-linejoin:round;
+      transition:stroke var(--dur) var(--ease-premium),transform var(--dur) var(--ease-spring);
+    }
+    .btn:hover .btn-arrow { border-color:rgba(0,255,102,0.5); background:var(--green-10); transform:rotate(45deg); }
+    .btn:hover .btn-arrow svg { stroke:var(--green); }
+
+    /* ============================================================
+       FOOTER
+       ============================================================ */
+    .footer {
+      margin-top:clamp(56px,10vh,80px); text-align:center;
+      opacity:0; animation:fadeSlideUp 0.8s var(--ease-premium) forwards;
+      animation-delay:2.0s;
+    }
+    .footer-section + .footer-section { margin-top:22px; }
+    .footer-eyebrow {
+      font-family:var(--font-body); font-size:9.5px; font-weight:500;
+      letter-spacing:0.26em; text-transform:uppercase;
+      color:rgba(255,255,255,0.16); margin-bottom:8px;
+    }
+    .footer-social {
+      display:inline-flex; align-items:center; gap:7px;
+      font-family:var(--font-display); font-size:14px; font-weight:400;
+      letter-spacing:0.03em; color:rgba(255,255,255,0.32);
+      text-decoration:none; transition:color 0.3s ease; position:relative;
+    }
+    .footer-social::after {
+      content:''; position:absolute; bottom:-2px; left:0;
+      width:0; height:1px; background:var(--green);
+      transition:width 0.35s var(--ease-premium);
+    }
+    .footer-social:hover { color:rgba(255,255,255,0.65); }
+    .footer-social:hover::after { width:100%; }
+    .footer-email {
+      display:inline-block; font-family:var(--font-display);
+      font-size:14px; font-weight:400; letter-spacing:0.03em;
+      color:rgba(255,255,255,0.32); text-decoration:none;
+      transition:color 0.3s ease; position:relative;
+    }
+    .footer-email::after {
+      content:''; position:absolute; bottom:-2px; left:0;
+      width:0; height:1px; background:var(--green);
+      transition:width 0.35s var(--ease-premium);
+    }
+    .footer-email:hover { color:rgba(255,255,255,0.65); }
+    .footer-email:hover::after { width:100%; }
+    .footer-copy { margin-top:28px; font-size:9.5px; letter-spacing:0.12em; color:rgba(255,255,255,0.09); }
+
+    /* ============================================================
+       SCROLL HINT
+       ============================================================ */
+    .scroll-hint {
+      position:fixed; bottom:28px; left:50%; transform:translateX(-50%);
+      display:flex; flex-direction:column; align-items:center; gap:5px;
+      pointer-events:none; z-index:10;
+      opacity:0; transition:opacity 0.6s ease;
+      animation:fadeIn 1s ease forwards; animation-delay:2.5s;
+    }
+    .scroll-hint.hide { opacity:0 !important; animation:none; }
+    .scroll-hint-bar {
+      width:1px; height:26px;
+      background:linear-gradient(to bottom,rgba(255,255,255,0.25),transparent);
+      animation:barPulse 2s ease-in-out infinite;
+    }
+    .scroll-hint-circle {
+      width:5px; height:5px; border-radius:50%;
+      border:1px solid rgba(255,255,255,0.2);
+      animation:barPulse 2s ease-in-out infinite 0.2s;
+    }
+    @keyframes barPulse {
+      0%,100% { opacity:0.35; transform:scaleY(1); }
+      50%     { opacity:0.8;  transform:scaleY(1.2); }
+    }
+    @keyframes fadeIn { to { opacity:1; } }
+
+    /* ============================================================
+       REDUCED MOTION
+       ============================================================ */
+    @media (prefers-reduced-motion:reduce) {
+      *,*::before,*::after {
+        animation-duration:0.001ms !important;
+        animation-delay:0.001ms !important;
+        transition-duration:0.001ms !important;
+      }
+      .page,#kraydWrap,.btn,.hero-pill,.hero-desc,.divider,.footer { opacity:1 !important; }
+    }
+
+    /* ============================================================
+       DESKTOP REFINEMENTS
+       ============================================================ */
+    @media (min-width:640px) {
+      .hero-desc { max-width:320px; font-size:15px; }
+      .btn { height:68px; padding:0 24px 0 18px; }
+      .btn-title { font-size:13.5px; }
+      .btn-icon-wrap { width:38px; height:38px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background -->
+  <div class="bg-grain" aria-hidden="true"></div>
+  <div class="bg-orb bg-orb-1" aria-hidden="true"></div>
+  <div class="bg-orb bg-orb-2" aria-hidden="true"></div>
+  <canvas id="bgCanvas" aria-hidden="true"></canvas>
+
+  <!-- Page -->
+  <div class="page">
+
+    <header class="hero">
+      <!-- Status pill -->
+      <div class="hero-pill" aria-label="Music Producer">
+        <span class="hero-pill-dot" aria-hidden="true"></span>
+        <span class="hero-pill-text">Producer</span>
+      </div>
+
+      <!-- Crystal Glass Logo (canvas) -->
+      <div id="kraydWrap" role="heading" aria-level="1" aria-label="KRAYD">
+        <canvas id="kraydCanvas"></canvas>
+      </div>
+
+      <p class="hero-desc">Music producer creating modern beats, loops and sound for artists worldwide.</p>
+    </header>
+
+    <div class="divider" role="separator" aria-hidden="true"></div>
+
+    <!-- Link buttons -->
+    <nav class="links-nav" aria-label="Links">
+
+      <!-- 1: Telegram -->
+      <a class="btn" href="https://t.me/whykrayd" target="_blank" rel="noopener noreferrer" aria-label="Telegram Channel — Loops">
+        <div class="btn-left">
+          <div class="btn-icon-wrap" aria-hidden="true">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path fill="rgba(255,255,255,0.45)" d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+            </svg>
+          </div>
+          <div class="btn-text">
+            <span class="btn-title">Telegram Channel</span>
+            <span class="btn-meta">Loops &amp; Samples</span>
+          </div>
+        </div>
+        <div class="btn-arrow" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M2 10L10 2M10 2H4M10 2V8"/></svg></div>
+      </a>
+
+      <!-- 2: Buy Beats -->
+      <a class="btn" href="https://beatstars.com/krayd" target="_blank" rel="noopener noreferrer" aria-label="Buy Beats on BeatStars">
+        <div class="btn-left">
+          <div class="btn-icon-wrap" aria-hidden="true">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+              <path d="M4 12h1.5M4 12v-2.5M4 12v2.5M7 7v10M10 9.5v5M13 6v12M16 9.5v5M19 7v10M22 12h-1.5M22 12v-2.5M22 12v2.5"
+                stroke="rgba(255,255,255,0.45)" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="btn-text">
+            <span class="btn-title">Buy Beats Here</span>
+            <span class="btn-meta">BeatStars Store</span>
+          </div>
+        </div>
+        <div class="btn-arrow" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M2 10L10 2M10 2H4M10 2V8"/></svg></div>
+      </a>
+
+      <!-- 3: SoundCloud -->
+      <a class="btn" href="https://on.soundcloud.com/4nIdj0YN8v6wWtriqm" target="_blank" rel="noopener noreferrer" aria-label="Listen on SoundCloud">
+        <div class="btn-left">
+          <div class="btn-icon-wrap" aria-hidden="true">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path fill="rgba(255,255,255,0.45)" d="M11.56 8.87V17h8.76c1.39 0 1.68-1.04 1.68-1.73 0-.69-.29-1.73-1.68-1.73-.14 0-.28.01-.42.04.05-.21.08-.43.08-.65 0-1.67-1.35-3.03-3.02-3.03-.63 0-1.21.19-1.7.51-.4-.94-1.34-1.59-2.44-1.59-.42 0-.82.11-1.16.29zM0 12.5C0 13.88 1.12 15 2.5 15S5 13.88 5 12.5 3.88 10 2.5 10 0 11.12 0 12.5zm6.5-.5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z"/>
+            </svg>
+          </div>
+          <div class="btn-text">
+            <span class="btn-title">SoundCloud</span>
+            <span class="btn-meta">Unreleased Songs</span>
+          </div>
+        </div>
+        <div class="btn-arrow" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M2 10L10 2M10 2H4M10 2V8"/></svg></div>
+      </a>
+
+      <!-- 4: Spotify -->
+      <a class="btn" href="https://open.spotify.com/artist/72Sfh2STdC6bnOKPkHqJt0?si=f56LPlHfTxKhVeeYVhZeSg" target="_blank" rel="noopener noreferrer" aria-label="Listen on Spotify">
+        <div class="btn-left">
+          <div class="btn-icon-wrap" aria-hidden="true">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path fill="rgba(255,255,255,0.45)" d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+            </svg>
+          </div>
+          <div class="btn-text">
+            <span class="btn-title">Spotify</span>
+            <span class="btn-meta">Stream Now</span>
+          </div>
+        </div>
+        <div class="btn-arrow" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M2 10L10 2M10 2H4M10 2V8"/></svg></div>
+      </a>
+
+      <!-- 5: YouTube -->
+      <a class="btn" href="https://youtube.com/@kraydasfuck?si=2mJEeKfXt5D7iCzz" target="_blank" rel="noopener noreferrer" aria-label="YouTube Music Videos">
+        <div class="btn-left">
+          <div class="btn-icon-wrap" aria-hidden="true">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path fill="rgba(255,255,255,0.45)" d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507 0-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/>
+            </svg>
+          </div>
+          <div class="btn-text">
+            <span class="btn-title">YouTube</span>
+            <span class="btn-meta">Music Videos</span>
+          </div>
+        </div>
+        <div class="btn-arrow" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M2 10L10 2M10 2H4M10 2V8"/></svg></div>
+      </a>
+
+      <!-- 6: TikTok -->
+      <a class="btn" href="https://www.tiktok.com/@kraydd?_r=1&_t=ZS-97pFkRsDUvo" target="_blank" rel="noopener noreferrer" aria-label="TikTok Video Content">
+        <div class="btn-left">
+          <div class="btn-icon-wrap" aria-hidden="true">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path fill="rgba(255,255,255,0.45)" d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.27 6.27 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.75a8.23 8.23 0 0 0 4.81 1.53V6.79a4.85 4.85 0 0 1-1.04-.1z"/>
+            </svg>
+          </div>
+          <div class="btn-text">
+            <span class="btn-title">TikTok</span>
+            <span class="btn-meta">Video Content</span>
+          </div>
+        </div>
+        <div class="btn-arrow" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M2 10L10 2M10 2H4M10 2V8"/></svg></div>
+      </a>
+
+    </nav>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-section">
+        <p class="footer-eyebrow">Instagram</p>
+        <a class="footer-social" href="https://instagram.com/whykrayd" target="_blank" rel="noopener noreferrer" aria-label="Instagram @whykrayd">@whykrayd</a>
+      </div>
+      <div class="footer-section">
+        <p class="footer-eyebrow">Business Inquiries</p>
+        <a class="footer-email" href="mailto:whykrayd@gmail.com">whykrayd@gmail.com</a>
+      </div>
+      <p class="footer-copy">© 2025 KRAYD. All rights reserved.</p>
+    </footer>
+
+  </div>
+
+  <!-- Scroll hint -->
+  <div class="scroll-hint" id="scrollHint" aria-hidden="true">
+    <div class="scroll-hint-bar"></div>
+    <div class="scroll-hint-circle"></div>
+  </div>
+
+  <script>
+  /* ================================================================
+     BACKGROUND PARTICLE FIELD
+     ================================================================ */
+  (() => {
+    const canvas = document.getElementById('bgCanvas');
+    const ctx    = canvas.getContext('2d');
+    let W, H, particles = [];
+
+    function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+
+    function mkP(fromBottom) {
+      const green = Math.random() < 0.12;
+      return {
+        x: Math.random() * W,
+        y: fromBottom ? H + 4 : Math.random() * H,
+        r: Math.random() * 1.3 + 0.2,
+        vx:(Math.random() - 0.5) * 0.18,
+        vy:-(Math.random() * 0.28 + 0.06),
+        life:0, maxLife:Math.random() * 340 + 180,
+        alpha:Math.random() * 0.38 + 0.05, green
+      };
+    }
+
+    function init() {
+      particles = [];
+      const n = Math.min(70, Math.floor(W * H / 14000));
+      for (let i = 0; i < n; i++) particles.push(mkP(false));
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+      particles.forEach((p, i) => {
+        p.life++; p.x += p.vx; p.y += p.vy;
+        const t = p.life / p.maxLife;
+        const fade = t < 0.18 ? t / 0.18 : t > 0.78 ? (1 - t) / 0.22 : 1;
+        const a = fade * p.alpha;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = p.green ? `rgba(0,255,102,${a * 0.7})` : `rgba(255,255,255,${a})`;
+        ctx.fill();
+        if (p.life >= p.maxLife || p.y < -8) particles[i] = mkP(true);
+      });
+      requestAnimationFrame(draw);
+    }
+
+    resize(); init(); draw();
+    window.addEventListener('resize', () => { resize(); init(); }, { passive: true });
+  })();
+
+  /* ================================================================
+     SCROLL HINT
+     ================================================================ */
+  (() => {
+    const hint = document.getElementById('scrollHint');
+    let hidden = false;
+    function hide() { if (hidden) return; hidden = true; hint.classList.add('hide'); }
+    window.addEventListener('scroll', hide, { passive: true });
+    setTimeout(hide, 5800);
+  })();
+
+  /* ================================================================
+     MAGNETIC BUTTON NUDGE (desktop only)
+     ================================================================ */
+  (() => {
+    if (window.matchMedia('(hover: none)').matches) return;
+    document.querySelectorAll('.btn').forEach(btn => {
+      btn.addEventListener('mousemove', e => {
+        const r  = btn.getBoundingClientRect();
+        const dx = e.clientX - (r.left + r.width / 2);
+        const dy = e.clientY - (r.top  + r.height / 2);
+        btn.style.transform = `translateY(-3px) scale(1.008) translate(${dx * 0.06}px,${dy * 0.06}px)`;
+      });
+      btn.addEventListener('mouseleave', () => { btn.style.transform = ''; });
+    });
+  })();
+
+  /* ================================================================
+     CRYSTAL GLASS LOGO  —  CrystalLogo class
+     ================================================================ */
+  (() => {
+    class CrystalLogo {
+      constructor(el) {
+        this.el  = el;
+        this.ctx = el.getContext('2d');
+        this.dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+
+        // time
+        this.t  = 0;
+        this.lt = 0;
+
+        // particles
+        this.dust     = [];
+        this.crystals = [];
+
+        // offscreen buffers
+        this.maskBuf    = document.createElement('canvas');
+        this.maskCtx    = this.maskBuf.getContext('2d');
+        this.crystalBuf = document.createElement('canvas');
+        this.crystalCtx = this.crystalBuf.getContext('2d');
+
+        // cached geometry
+        this.fs  = 100;
+        this.tW  = 0;
+        this.tX  = 0;
+        this.tY  = 0;
+        this.cx  = 0;
+        this.cy  = 0;
+        this.W   = 0;
+        this.H   = 0;
+
+        this.ready = false;
+
+        this._resize = () => this.resize();
+        window.addEventListener('resize', this._resize, { passive: true });
+        this.resize();
+
+        document.fonts.ready.then(() => {
+          this.buildMask();
+          this.initDust();
+          this.initCrystals();
+          this.ready = true;
+          requestAnimationFrame(ts => this.frame(ts));
+        });
+      }
+
+      /* ── Layout ── */
+      resize() {
+        const wrap = this.el.parentElement;
+        const cssW = Math.min(wrap.offsetWidth, 500);
+        const cssH = Math.round(cssW * 0.50);
+
+        this.W = cssW; this.H = cssH;
+        this.cx = cssW / 2; this.cy = cssH / 2;
+
+        const pw = Math.round(cssW * this.dpr);
+        const ph = Math.round(cssH * this.dpr);
+
+        [this.el, this.maskBuf, this.crystalBuf].forEach(c => {
+          c.width = pw; c.height = ph;
+        });
+
+        this.el.style.width  = cssW + 'px';
+        this.el.style.height = cssH + 'px';
+
+        const d = this.dpr;
+        this.ctx.setTransform(d, 0, 0, d, 0, 0);
+        this.maskCtx.setTransform(d, 0, 0, d, 0, 0);
+        this.crystalCtx.setTransform(d, 0, 0, d, 0, 0);
+
+        // Font size: fill ~88% of width, capped at 148px
+        this.fs = Math.min(cssW * 0.27, 148);
+
+        if (this.ready) this.buildMask();
+      }
+
+      buildMask() {
+        const { maskCtx: ctx, W, H, cx, cy } = this;
+        let fs = this.fs;
+
+        ctx.clearRect(0, 0, W, H);
+        ctx.font = `700 ${fs}px 'Space Grotesk', sans-serif`;
+        try { ctx.letterSpacing = '0.03em'; } catch(e) {}
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        // Ensure text fits within 92% of canvas width
+        let m = ctx.measureText('KRAYD');
+        if (m.width > W * 0.92) {
+          fs = fs * (W * 0.92 / m.width);
+          ctx.font = `700 ${fs}px 'Space Grotesk', sans-serif`;
+          m = ctx.measureText('KRAYD');
+        }
+        this.fs = fs;
+
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText('KRAYD', cx, cy);
+
+        this.tW = m.width;
+        this.tX = cx - m.width / 2;
+        this.tY = cy - fs * 0.5;
+
+        if (this.ready) this.initCrystals();
+      }
+
+      /* ── Glass Dust / Mist ── */
+      makeDust(scatter) {
+        const { cx, cy, tW, fs } = this;
+        return {
+          x:       cx + (Math.random() - 0.5) * tW * 0.85,
+          y:       scatter ? cy + (Math.random() - 0.5) * fs * 0.8 : cy + fs * 0.48,
+          r:       4 + Math.random() * 18,
+          vx:      (Math.random() - 0.5) * 0.22,
+          vy:      -(0.07 + Math.random() * 0.20),
+          a:       0.012 + Math.random() * 0.028,
+          life:    scatter ? Math.random() * 300 : 0,
+          maxLife: 220 + Math.random() * 260,
+          rot:     Math.random() * Math.PI * 2,
+          rotV:    (Math.random() - 0.5) * 0.007,
+          spark:   Math.random() > 0.70,
+          sparkPh: Math.random() * Math.PI * 2,
+        };
+      }
+
+      initDust() {
+        const count = window.innerWidth < 480 ? 28 : 42;
+        this.dust = [];
+        for (let i = 0; i < count; i++) this.dust.push(this.makeDust(true));
+      }
+
+      /* ── Crystal Gems ── */
+      makeCrystal(scatter) {
+        const { tX, tW, tY, fs } = this;
+        return {
+          x:       tX + Math.random() * tW,
+          y:       scatter ? tY + Math.random() * fs : tY + fs + 4,
+          size:    1.2 + Math.random() * 4.2,
+          vx:      (Math.random() - 0.5) * 0.38,
+          vy:      -(0.09 + Math.random() * 0.28),
+          rot:     Math.random() * Math.PI * 2,
+          rotV:    (Math.random() - 0.5) * 0.022,
+          a:       0.55 + Math.random() * 0.40,
+          life:    scatter ? Math.random() * 250 : 0,
+          maxLife: 210 + Math.random() * 220,
+          hue:     310 + Math.random() * 55,   // pink → magenta
+          sat:     62 + Math.random() * 25,
+          lit:     82 + Math.random() * 14,
+          sparkPh: Math.random() * Math.PI * 2,
+        };
+      }
+
+      initCrystals() {
+        const count = window.innerWidth < 480 ? 20 : 28;
+        this.crystals = [];
+        for (let i = 0; i < count; i++) this.crystals.push(this.makeCrystal(true));
+      }
+
+      /* ── Animation loop ── */
+      frame(ts) {
+        const dt = Math.min((ts - this.lt) / 16.67, 3.5);
+        this.lt = ts;
+        this.t += 0.016 * dt;
+
+        const { ctx, W, H } = this;
+        ctx.clearRect(0, 0, W, H);
+
+        this.drawDust(dt);
+        this.drawGlassText();
+        this.drawCracks();
+        this.drawCrystalsClipped(dt);
+        this.drawOuterGlow();
+
+        requestAnimationFrame(ts => this.frame(ts));
+      }
+
+      /* ── DUST ── */
+      drawDust(dt) {
+        const { ctx, t } = this;
+        ctx.save();
+
+        this.dust.forEach((p, i) => {
+          const tR   = p.life / p.maxLife;
+          const fade = tR < 0.14 ? tR / 0.14 : tR > 0.62 ? (1 - tR) / 0.38 : 1;
+          let alpha  = p.a * fade;
+
+          if (p.spark) {
+            const sp = Math.sin(t * 3.8 + p.sparkPh) * 0.5 + 0.5;
+            alpha *= (0.4 + sp * 0.6);
+          }
+          if (alpha < 0.004) { p.life += dt; return; }
+
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rot);
+          ctx.scale(1, 0.62);  // flatten for wispy cloud look
+
+          const g = ctx.createRadialGradient(0, 0, 0, 0, 0, p.r);
+          g.addColorStop(0,   `rgba(235,245,255,${alpha})`);
+          g.addColorStop(0.5, `rgba(215,230,255,${alpha * 0.32})`);
+          g.addColorStop(1,   'rgba(200,220,255,0)');
+          ctx.fillStyle = g;
+          ctx.beginPath();
+          ctx.arc(0, 0, p.r, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+
+          p.x   += (p.vx + Math.sin(t * 0.55 + i * 0.45) * 0.07) * dt;
+          p.y   += p.vy * dt;
+          p.r   += 0.10 * dt;
+          p.rot += p.rotV * dt;
+          p.life += dt;
+
+          if (p.life >= p.maxLife || p.y < -p.r * 2) this.dust[i] = this.makeDust(false);
+        });
+
+        ctx.restore();
+      }
+
+      /* ── GLASS TEXT ── */
+      drawGlassText() {
+        const { ctx, cx, cy, fs, t, tW, tX } = this;
+        const font = `700 ${fs}px 'Space Grotesk', sans-serif`;
+
+        ctx.save();
+        ctx.font = font;
+        try { ctx.letterSpacing = '0.03em'; } catch(e) {}
+        ctx.textAlign    = 'center';
+        ctx.textBaseline = 'middle';
+
+        // ── Ambient back-glow (drawn FIRST so it appears behind) ──
+        ctx.save();
+        ctx.shadowColor = 'rgba(180,210,255,0.35)';
+        ctx.shadowBlur  = 40;
+        ctx.fillStyle   = 'rgba(255,255,255,0.03)';
+        ctx.fillText('KRAYD', cx, cy);
+        ctx.shadowBlur  = 0;
+        ctx.restore();
+
+        // ── 3D extrusion: 8 layers from deep to front ──
+        for (let d = 8; d >= 1; d--) {
+          const darkness = 0.07 + (9 - d) * 0.013;
+          // Shift toward blue as we go deeper
+          const b = Math.max(5, 25 - d * 2);
+          const g = Math.max(4, 20 - d * 2);
+          ctx.fillStyle = `rgba(${b}, ${g}, ${b + 18}, ${darkness})`;
+          ctx.fillText('KRAYD', cx + d * 0.58, cy + d * 0.78);
+        }
+
+        // Chromatic side face (prismatic edge glow)
+        const prism = [
+          [3.8, 4.2, 'rgba(80,130,220,0.09)'],
+          [2.6, 2.9, 'rgba(110,160,235,0.07)'],
+          [1.4, 1.6, 'rgba(160,195,248,0.05)'],
+        ];
+        prism.forEach(([ox, oy, col]) => {
+          ctx.fillStyle = col;
+          ctx.fillText('KRAYD', cx + ox, cy + oy);
+        });
+
+        // ── Main glass body: precise 7-stop vertical gradient ──
+        const bodyG = ctx.createLinearGradient(0, cy - fs * 0.5, 0, cy + fs * 0.5);
+        bodyG.addColorStop(0.000, 'rgba(255,255,255,0.96)');   // top specular edge
+        bodyG.addColorStop(0.055, 'rgba(248,252,255,0.40)');   // fresnel fade
+        bodyG.addColorStop(0.180, 'rgba(210,228,255,0.13)');   // glass body top
+        bodyG.addColorStop(0.420, 'rgba(162,196,248,0.06)');   // glass core (near transparent)
+        bodyG.addColorStop(0.640, 'rgba(175,208,250,0.09)');   // glass body lower
+        bodyG.addColorStop(0.860, 'rgba(222,237,255,0.32)');   // lower reflective zone
+        bodyG.addColorStop(1.000, 'rgba(255,255,255,0.94)');   // bottom specular edge
+        ctx.fillStyle = bodyG;
+        ctx.fillText('KRAYD', cx, cy);
+
+        // ── Interior light source (top-left, simulates light inside glass) ──
+        const ilX = tX + tW * 0.14;
+        const ilY = cy - fs * 0.32;
+        const ilG = ctx.createRadialGradient(ilX, ilY, 0, ilX, ilY, tW * 0.42);
+        ilG.addColorStop(0,   'rgba(255,255,255,0.20)');
+        ilG.addColorStop(0.45,'rgba(255,255,255,0.07)');
+        ilG.addColorStop(1,   'rgba(255,255,255,0)');
+        ctx.fillStyle = ilG;
+        ctx.fillText('KRAYD', cx, cy);
+
+        // Secondary point light (bottom-right, subtle blue-cool)
+        const il2X = tX + tW * 0.84;
+        const il2Y = cy + fs * 0.28;
+        const il2G = ctx.createRadialGradient(il2X, il2Y, 0, il2X, il2Y, tW * 0.3);
+        il2G.addColorStop(0, 'rgba(180,210,255,0.11)');
+        il2G.addColorStop(1, 'rgba(180,210,255,0)');
+        ctx.fillStyle = il2G;
+        ctx.fillText('KRAYD', cx, cy);
+
+        // ── Primary diagonal specular (top-left corner → center) ──
+        const specG = ctx.createLinearGradient(tX, cy - fs * 0.5, tX + tW * 0.55, cy + fs * 0.5);
+        specG.addColorStop(0.00, 'rgba(255,255,255,0.00)');
+        specG.addColorStop(0.18, 'rgba(255,255,255,0.56)');
+        specG.addColorStop(0.32, 'rgba(255,255,255,0.20)');
+        specG.addColorStop(0.50, 'rgba(255,255,255,0.06)');
+        specG.addColorStop(1.00, 'rgba(255,255,255,0.00)');
+        ctx.fillStyle = specG;
+        ctx.fillText('KRAYD', cx, cy);
+
+        // Secondary specular band (bottom right)
+        const spec2 = ctx.createLinearGradient(tX + tW * 0.5, cy, tX + tW, cy + fs * 0.5);
+        spec2.addColorStop(0, 'rgba(255,255,255,0.00)');
+        spec2.addColorStop(1, 'rgba(255,255,255,0.18)');
+        ctx.fillStyle = spec2;
+        ctx.fillText('KRAYD', cx, cy);
+
+        // ── Animated light sweep (slow, smooth) ──
+        const swP  = Math.sin(t * 0.42) * 0.5 + 0.5;
+        const swX  = tX + swP * tW;
+        const swHW = tW * 0.16;
+        const swG  = ctx.createLinearGradient(swX - swHW, 0, swX + swHW, 0);
+        swG.addColorStop(0,   'rgba(255,255,255,0)');
+        swG.addColorStop(0.5, `rgba(255,255,255,${0.16 + Math.sin(t * 0.85) * 0.04})`);
+        swG.addColorStop(1,   'rgba(255,255,255,0)');
+        ctx.fillStyle = swG;
+        ctx.fillText('KRAYD', cx, cy);
+
+        // ── Green accent reflections (two traveling points) ──
+        const g1x = cx + Math.sin(t * 0.52) * tW * 0.32;
+        const g1y = cy + Math.cos(t * 0.38) * fs  * 0.20;
+        const gr1 = ctx.createRadialGradient(g1x, g1y, 0, g1x, g1y, tW * 0.30);
+        gr1.addColorStop(0, `rgba(0,255,102,${0.09 + Math.sin(t * 0.65) * 0.035})`);
+        gr1.addColorStop(1, 'rgba(0,255,102,0)');
+        ctx.fillStyle = gr1;
+        ctx.fillText('KRAYD', cx, cy);
+
+        const g2x = cx - Math.sin(t * 0.38 + 1.1) * tW * 0.26;
+        const g2y = cy - Math.cos(t * 0.30 + 0.4) * fs  * 0.18;
+        const gr2 = ctx.createRadialGradient(g2x, g2y, 0, g2x, g2y, tW * 0.18);
+        gr2.addColorStop(0, `rgba(0,210,80,${0.055 + Math.sin(t * 0.48 + 1) * 0.02})`);
+        gr2.addColorStop(1, 'rgba(0,210,80,0)');
+        ctx.fillStyle = gr2;
+        ctx.fillText('KRAYD', cx, cy);
+
+        // ── Bevel edge stroke ──
+        ctx.save();
+        ctx.lineWidth = 0.95;
+        const bevG = ctx.createLinearGradient(0, cy - fs * 0.5, 0, cy + fs * 0.5);
+        bevG.addColorStop(0.00, 'rgba(255,255,255,0.80)');
+        bevG.addColorStop(0.30, 'rgba(255,255,255,0.28)');
+        bevG.addColorStop(0.60, 'rgba(200,220,255,0.14)');
+        bevG.addColorStop(1.00, 'rgba(255,255,255,0.58)');
+        ctx.strokeStyle = bevG;
+        ctx.strokeText('KRAYD', cx, cy);
+        ctx.restore();
+
+        ctx.restore();
+      }
+
+      /* ── CRACKS ── */
+      drawCracks() {
+        const { ctx, tX, tW, cy, fs, t } = this;
+
+        // Crack groups positioned at K, A, D corner areas
+        const groups = [
+          {
+            ox: tX + tW * 0.105, oy: cy - fs * 0.24, phase: 0.0,
+            segs: [
+              [[0,0],[11,-7],[17,-4]],
+              [[4,-6],[8,-14]],
+              [[11,-7],[13,-3],[10,1]],
+            ],
+          },
+          {
+            ox: tX + tW * 0.462, oy: cy - fs * 0.37, phase: 1.5,
+            segs: [
+              [[0,0],[7,5],[10,2],[14,6]],
+              [[7,5],[6,10]],
+            ],
+          },
+          {
+            ox: tX + tW * 0.875, oy: cy - fs * 0.26, phase: 2.8,
+            segs: [
+              [[0,0],[8,-6],[12,-2]],
+              [[3,-5],[6,-11],[4,-14]],
+            ],
+          },
+        ];
+
+        ctx.save();
+        ctx.lineCap  = 'round';
+        ctx.lineJoin = 'round';
+
+        groups.forEach(cg => {
+          const pulse = 0.48 + Math.sin(t * 1.15 + cg.phase) * 0.20;
+          ctx.save();
+          ctx.translate(cg.ox, cg.oy);
+
+          cg.segs.forEach(seg => {
+            // Thick base (glow halo)
+            ctx.beginPath();
+            ctx.moveTo(seg[0][0], seg[0][1]);
+            for (let j = 1; j < seg.length; j++) ctx.lineTo(seg[j][0], seg[j][1]);
+            ctx.lineWidth   = 1.8;
+            ctx.strokeStyle = `rgba(255,255,255,${0.10 * pulse})`;
+            ctx.stroke();
+
+            // Medium (main crack)
+            ctx.lineWidth   = 0.8;
+            ctx.strokeStyle = `rgba(255,255,255,${0.42 * pulse})`;
+            ctx.shadowColor = 'rgba(255,255,255,0.5)';
+            ctx.shadowBlur  = 2.5;
+            ctx.stroke();
+
+            // Thin bright core
+            ctx.lineWidth   = 0.28;
+            ctx.strokeStyle = `rgba(255,255,255,${0.75 * pulse})`;
+            ctx.shadowBlur  = 1;
+            ctx.stroke();
+
+            ctx.shadowBlur = 0;
+          });
+
+          ctx.restore();
+        });
+
+        ctx.restore();
+      }
+
+      /* ── CRYSTAL GEMS (clipped to letter shapes) ── */
+      drawCrystalsClipped(dt) {
+        const { crystalCtx: cCtx, maskBuf, crystalBuf, W, H, t } = this;
+        cCtx.clearRect(0, 0, W, H);
+
+        this.crystals.forEach((p, i) => {
+          const tR   = p.life / p.maxLife;
+          const fade = tR < 0.11 ? tR / 0.11 : tR > 0.76 ? (1 - tR) / 0.24 : 1;
+          const sp   = Math.sin(t * 5.2 + p.sparkPh) * 0.5 + 0.5;
+          const a    = p.a * fade * (0.38 + sp * 0.62);
+
+          if (a > 0.015) {
+            cCtx.save();
+            cCtx.translate(p.x, p.y);
+            cCtx.rotate(p.rot);
+
+            const s = p.size;
+
+            // Diamond (4-pointed crystal gem)
+            cCtx.beginPath();
+            cCtx.moveTo(0,         -s * 1.45);
+            cCtx.lineTo(s * 0.68,   0);
+            cCtx.lineTo(0,          s * 1.45);
+            cCtx.lineTo(-s * 0.68,  0);
+            cCtx.closePath();
+
+            // Gradient: bright tip → saturated body → faded base
+            const cg = cCtx.createLinearGradient(0, -s * 1.45, 0, s * 1.45);
+            cg.addColorStop(0,   `hsla(${p.hue},${p.sat}%,98%,${a})`);
+            cg.addColorStop(0.28,`hsla(${p.hue},${p.sat}%,${p.lit}%,${a * 0.88})`);
+            cg.addColorStop(0.65,`hsla(${p.hue},${p.sat - 8}%,${p.lit - 9}%,${a * 0.62})`);
+            cg.addColorStop(1,   `hsla(${p.hue},${p.sat}%,68%,${a * 0.28})`);
+            cCtx.fillStyle = cg;
+            cCtx.fill();
+
+            // Inner horizontal facet line
+            cCtx.beginPath();
+            cCtx.moveTo(-s * 0.40, -s * 0.48);
+            cCtx.lineTo( s * 0.40, -s * 0.48);
+            cCtx.lineWidth   = 0.38;
+            cCtx.strokeStyle = `hsla(${p.hue},80%,98%,${a * 0.55})`;
+            cCtx.stroke();
+
+            // Sparkle cross-rays when near peak brightness
+            if (sp > 0.68) {
+              const ra  = (sp - 0.68) / 0.32 * a * 0.95;
+              const rl  = s * 3.0;
+              cCtx.save();
+              cCtx.strokeStyle = `hsla(${p.hue},100%,97%,${ra})`;
+              cCtx.lineWidth   = 0.55;
+              cCtx.shadowColor = `hsla(${p.hue},100%,92%,${ra * 0.6})`;
+              cCtx.shadowBlur  = 3.5;
+              cCtx.beginPath();
+              cCtx.moveTo(-rl, 0); cCtx.lineTo(rl, 0);
+              cCtx.moveTo(0, -rl); cCtx.lineTo(0, rl);
+              cCtx.stroke();
+              // Diagonal rays (45°)
+              const rd = rl * 0.55;
+              cCtx.lineWidth = 0.3;
+              cCtx.beginPath();
+              cCtx.moveTo(-rd, -rd); cCtx.lineTo(rd, rd);
+              cCtx.moveTo(rd, -rd);  cCtx.lineTo(-rd, rd);
+              cCtx.stroke();
+              cCtx.restore();
+            }
+
+            cCtx.restore();
+          }
+
+          // Physics update
+          p.x    += (p.vx + Math.sin(t * 0.40 + i * 0.82) * 0.13) * dt;
+          p.y    += p.vy * dt;
+          p.rot  += p.rotV * dt;
+          p.life += dt;
+
+          if (p.life >= p.maxLife || p.y < this.tY - 40) {
+            this.crystals[i] = this.makeCrystal(false);
+          }
+        });
+
+        // Clip to letter shapes: destination-in with the text mask
+        cCtx.save();
+        cCtx.globalCompositeOperation = 'destination-in';
+        cCtx.drawImage(
+          maskBuf,
+          0, 0, maskBuf.width, maskBuf.height,
+          0, 0, W, H
+        );
+        cCtx.restore();
+
+        // Composite clipped crystals onto main canvas
+        this.ctx.drawImage(
+          crystalBuf,
+          0, 0, crystalBuf.width, crystalBuf.height,
+          0, 0, W, H
+        );
+      }
+
+      /* ── OUTER GLOW ── */
+      drawOuterGlow() {
+        const { ctx, cx, cy, fs, t } = this;
+        const font = `700 ${fs}px 'Space Grotesk', sans-serif`;
+        ctx.save();
+        ctx.font = font;
+        try { ctx.letterSpacing = '0.03em'; } catch(e) {}
+        ctx.textAlign    = 'center';
+        ctx.textBaseline = 'middle';
+
+        // Soft white aura pulsing gently
+        const glowA = 0.032 + Math.sin(t * 0.72) * 0.010;
+        ctx.shadowColor = `rgba(200,222,255,0.90)`;
+        ctx.shadowBlur  = 28;
+        ctx.fillStyle   = `rgba(255,255,255,${glowA})`;
+        ctx.fillText('KRAYD', cx, cy);
+
+        // Thin green rim pulse
+        const greenA = 0.018 + Math.sin(t * 0.55 + 0.8) * 0.008;
+        ctx.shadowColor = 'rgba(0,255,102,0.6)';
+        ctx.shadowBlur  = 18;
+        ctx.fillStyle   = `rgba(0,255,102,${greenA})`;
+        ctx.fillText('KRAYD', cx, cy);
+
+        ctx.shadowBlur = 0;
+        ctx.restore();
+      }
+    }
+
+    // Initialize once fonts are ready
+    const logoCanvas = document.getElementById('kraydCanvas');
+    if (logoCanvas) new CrystalLogo(logoCanvas);
+  })();
+  </script>
+
+</body>
+</html>
